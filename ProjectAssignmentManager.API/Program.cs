@@ -15,13 +15,21 @@ builder.Services.AddOpenApi();
 // Configure CORS for Angular frontend
 builder.Services.AddCors(options =>
 {
+    // Development: Allow all origins
     options.AddPolicy("AllowAngularApp", policy =>
     {
+        policy.SetIsOriginAllowed(_ => true)  // Allow ANY origin in development
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+
+    // Production: Restrict origins
+    options.AddPolicy("ProductionCors", policy =>
+    {
         policy.WithOrigins(
-                "http://localhost:4200",
-                "https://localhost:4200",
-                "http://127.0.0.1:4200",
-                "https://127.0.0.1:4200"
+                "https://yourdomain.com",
+                "https://www.yourdomain.com"
               )
               .AllowAnyMethod()
               .AllowAnyHeader()
