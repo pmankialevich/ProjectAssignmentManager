@@ -1,0 +1,50 @@
+<div class="developers-container">
+  <div class="header">
+    <h2>Developers</h2>
+    <button class="btn btn-primary" routerLink="/developers/new">
+      <span>+</span> Add Developer
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading developers...</div>
+  
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table *ngIf="!loading && developers.length > 0" class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Seniority Level</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let developer of developers">
+        <td>{{ developer.name }}</td>
+        <td>{{ developer.email }}</td>
+        <td>
+          <span class="badge" [ngClass]="'badge-' + developer.seniorityLevel">
+            {{ getSeniorityText(developer.seniorityLevel) }}
+          </span>
+        </td>
+        <td class="actions">
+          <button class="btn btn-sm btn-info" [routerLink]="['/developers', developer.id]">
+            View
+          </button>
+          <button class="btn btn-sm btn-warning" [routerLink]="['/developers/edit', developer.id]">
+            Edit
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="deleteDeveloper(developer.id)">
+            Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && developers.length === 0" class="empty-state">
+    <p>No developers found. Create one to get started!</p>
+    <button class="btn btn-primary" routerLink="/developers/new">Add First Developer</button>
+  </div>
+</div>
