@@ -17,7 +17,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(
+                "http://localhost:4200",
+                "https://localhost:4200",
+                "http://127.0.0.1:4200",
+                "https://127.0.0.1:4200"
+              )
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -51,12 +56,17 @@ if (app.Environment.IsDevelopment())
     Console.WriteLine("?? TIP: Use 'start-app.bat' or 'quick-start.bat' to launch both backend and frontend!");
 }
 
+// CORS must be before other middleware!
+app.UseCors("AllowAngularApp");
+
 // Global exception handling middleware
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-app.UseHttpsRedirection();
-
-app.UseCors("AllowAngularApp");
+// Don't redirect to HTTPS in development
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 
