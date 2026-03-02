@@ -44,8 +44,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
-    // Auto-start Angular dev server
-    StartAngularDevServer();
+    Console.WriteLine("? Backend API ready!");
+    Console.WriteLine("? API URL: https://localhost:5001/");
+    Console.WriteLine("? OpenAPI: https://localhost:5001/openapi/v1.json");
+    Console.WriteLine("");
+    Console.WriteLine("?? TIP: Use 'start-app.bat' or 'quick-start.bat' to launch both backend and frontend!");
 }
 
 // Global exception handling middleware
@@ -60,44 +63,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-// Method to automatically start Angular dev server
-void StartAngularDevServer()
-{
-    var angularPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "ProjectAssignmentManager.UI");
-
-    if (!Directory.Exists(angularPath))
-    {
-        Console.WriteLine("??  Angular project not found at: " + angularPath);
-        return;
-    }
-
-    // Check if node_modules exists
-    if (!Directory.Exists(Path.Combine(angularPath, "node_modules")))
-    {
-        Console.WriteLine("??  Angular dependencies not installed. Run 'npm install' in UI folder.");
-        return;
-    }
-
-    try
-    {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "cmd.exe",
-            Arguments = "/c ng serve --open",
-            WorkingDirectory = angularPath,
-            UseShellExecute = true,
-            CreateNoWindow = false
-        };
-
-        Process.Start(startInfo);
-        Console.WriteLine("? Angular dev server starting...");
-        Console.WriteLine("? Frontend will open at: http://localhost:4200/");
-        Console.WriteLine("? Backend API running at: https://localhost:5001/");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"??  Failed to start Angular: {ex.Message}");
-        Console.WriteLine("   You can start it manually: cd ProjectAssignmentManager.UI && ng serve");
-    }
-}

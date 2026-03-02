@@ -27,8 +27,22 @@ echo.
 
 start "Backend API" cmd /k "cd ProjectAssignmentManager.API && dotnet run"
 
+echo.
 echo Waiting for backend to start...
-timeout /t 12 /nobreak > nul
+echo This may take 10-20 seconds...
+echo.
+
+:WAIT_BACKEND
+timeout /t 2 /nobreak > nul
+curl -k -s https://localhost:5001/api/developers > nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo   Still waiting for backend...
+    goto WAIT_BACKEND
+)
+
+echo.
+echo ✅ Backend is ready!
+echo.
 
 start "Angular Frontend" cmd /k "cd ProjectAssignmentManager.UI && ng serve --open"
 

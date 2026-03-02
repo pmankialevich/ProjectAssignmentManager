@@ -30,9 +30,35 @@ Write-Host ""
 # Start Backend in new window
 $backendJob = Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$rootPath\ProjectAssignmentManager.API'; dotnet run" -PassThru
 
-Write-Host "Waiting for backend to start (10 seconds)..." -ForegroundColor Yellow
-Start-Sleep -Seconds 10
+Write-Host "Waiting for backend to start..." -ForegroundColor Yellow
 
+# Wait for backend to be available (max 30 seconds)
+$maxAttempts = 30
+$attempt = 0
+$backendReady = $false
+
+while ($attempt -lt $maxAttempts -and -not $backendReady) {
+    $attempt++
+    Write-Host "  Checking backend... (attempt $attempt/$maxAttempts)" -ForegroundColor Gray
+
+    try {
+        $response = Invoke-WebRequest -Uri "https://localhost:5001/api/developers" -UseBasicParsing -SkipCertificateCheck -TimeoutSec 2 -ErrorAction SilentlyContinue
+        if ($response.StatusCode -eq 200) {
+            $backendReady = $true
+            Write-Host "✅ Backend is ready!" -ForegroundColor Green
+        }
+    }
+    catch {
+        Start-Sleep -Seconds 1
+    }
+}
+
+if (-not $backendReady) {
+    Write-Host "⚠️  Backend is taking longer than expected..." -ForegroundColor Yellow
+    Write-Host "   Continuing anyway. Please wait for backend to fully start." -ForegroundColor Yellow
+}
+
+Write-Host ""
 Write-Host "Starting Angular Frontend..." -ForegroundColor Green
 Write-Host "URL: http://localhost:4200/" -ForegroundColor Cyan
 Write-Host ""
