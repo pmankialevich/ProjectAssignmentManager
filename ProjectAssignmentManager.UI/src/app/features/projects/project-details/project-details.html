@@ -1,1 +1,95 @@
-<p>project-details works!</p>
+<div class="container">
+  <div *ngIf="loading" class="loading">Loading project details...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="project && !loading" class="details-container">
+    <div class="card">
+      <div class="header">
+        <h2>Project Details</h2>
+        <div class="actions">
+          <button class="btn btn-warning" [routerLink]="['/projects/edit', project.id]">
+            Edit
+          </button>
+          <button class="btn btn-secondary" (click)="goBack()">
+            Back to List
+          </button>
+        </div>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-item">
+          <label>Project Name:</label>
+          <span>{{ project.name }}</span>
+        </div>
+        <div class="detail-item full-width">
+          <label>Description:</label>
+          <span>{{ project.description || 'No description provided' }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Created At:</label>
+          <span>{{ project.createdAt | date:'short' }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Updated At:</label>
+          <span>{{ project.updatedAt | date:'short' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Assigned Developers</h3>
+      
+      <div *ngIf="developers.length === 0" class="empty-state">
+        <p>No developers assigned to this project yet.</p>
+      </div>
+
+      <table *ngIf="developers.length > 0" class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Seniority Level</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let developer of developers">
+            <td>{{ developer.name }}</td>
+            <td>{{ developer.email }}</td>
+            <td>
+              <span class="badge" [ngClass]="'badge-' + developer.seniorityLevel">
+                {{ getSeniorityText(developer.seniorityLevel) }}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn btn-sm btn-info" [routerLink]="['/developers', developer.id]">
+                View
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="removeDeveloper(developer.id)">
+                Remove
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="assign-section">
+        <h4>Assign Developer</h4>
+        <div class="assign-form">
+          <select [(ngModel)]="selectedDeveloperId" class="form-control">
+            <option value="">Select a developer...</option>
+            <option *ngFor="let developer of availableDevelopers" [value]="developer.id">
+              {{ developer.name }} - {{ getSeniorityText(developer.seniorityLevel) }}
+            </option>
+          </select>
+          <button 
+            class="btn btn-primary" 
+            (click)="assignDeveloper()" 
+            [disabled]="!selectedDeveloperId">
+            Assign
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

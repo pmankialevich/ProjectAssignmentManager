@@ -1,1 +1,45 @@
-<p>project-form works!</p>
+<div class="container">
+  <div class="card">
+    <h2>{{ isEditMode ? 'Edit Project' : 'Create Project' }}</h2>
+    
+    <div *ngIf="loading" class="loading">Loading...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+      <div class="form-group">
+        <label for="name">Project Name *</label>
+        <input
+          id="name"
+          type="text"
+          class="form-control"
+          formControlName="name"
+          placeholder="Enter project name"
+        />
+        <div *ngIf="projectForm.get('name')?.invalid && projectForm.get('name')?.touched" class="error-message">
+          <small *ngIf="projectForm.get('name')?.errors?.['required']">Project name is required</small>
+          <small *ngIf="projectForm.get('name')?.errors?.['minlength']">Name must be at least 3 characters</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          class="form-control"
+          formControlName="description"
+          placeholder="Enter project description (optional)"
+          rows="4"
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="projectForm.invalid || loading">
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancel()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
