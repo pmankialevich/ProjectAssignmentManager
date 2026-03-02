@@ -32,17 +32,34 @@ echo Waiting for backend to start...
 echo This may take 10-20 seconds...
 echo.
 
+set ATTEMPTS=0
+set MAX_ATTEMPTS=20
+
 :WAIT_BACKEND
+set /a ATTEMPTS+=1
+if %ATTEMPTS% GTR %MAX_ATTEMPTS% (
+    echo.
+    echo ⚠️  Backend is taking longer than expected.
+    echo    Check the "Backend API" window for errors.
+    echo    Continuing to start Angular anyway...
+    echo.
+    goto START_FRONTEND
+)
+
 timeout /t 2 /nobreak > nul
+
+echo   Checking backend... (attempt %ATTEMPTS%/%MAX_ATTEMPTS%)
+
 curl -k -s https://localhost:5001/api/developers > nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo   Still waiting for backend...
     goto WAIT_BACKEND
 )
 
 echo.
 echo ✅ Backend is ready!
 echo.
+
+:START_FRONTEND
 
 start "Angular Frontend" cmd /k "cd ProjectAssignmentManager.UI && ng serve --open"
 

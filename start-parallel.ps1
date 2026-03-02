@@ -1,6 +1,7 @@
-# Start Both Backend and Frontend
+# Start Both Backend and Frontend in Parallel (FAST!)
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "  Project Assignment Manager - Launcher" -ForegroundColor Cyan
+Write-Host "  Project Assignment Manager - Fast Launcher" -ForegroundColor Cyan
+Write-Host "  Starting in Parallel Mode" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -23,24 +24,24 @@ if (Test-Path "$rootPath\ProjectAssignmentManager.UI\copy-all-templates.ps1") {
 }
 
 Write-Host ""
-Write-Host "Starting Backend API..." -ForegroundColor Green
-Write-Host "URL: https://localhost:5001/" -ForegroundColor Cyan
-Write-Host ""
+Write-Host "🚀 Starting Backend API..." -ForegroundColor Green
 
 # Start Backend in new window
-$backendJob = Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$rootPath\ProjectAssignmentManager.API'; dotnet run" -PassThru
+Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$rootPath\ProjectAssignmentManager.API'; dotnet run"
 
-Write-Host "Waiting 5 seconds before starting Frontend..." -ForegroundColor Yellow
-Write-Host "(Backend will continue starting in parallel)" -ForegroundColor Gray
+Write-Host "   Backend starting at: https://localhost:5001/" -ForegroundColor Cyan
+
+Write-Host ""
+Write-Host "⏳ Waiting 5 seconds before starting Frontend..." -ForegroundColor Yellow
 Start-Sleep -Seconds 5
 
 Write-Host ""
-Write-Host "Starting Angular Frontend..." -ForegroundColor Green
-Write-Host "URL: http://localhost:4200/" -ForegroundColor Cyan
-Write-Host ""
+Write-Host "🚀 Starting Angular Frontend..." -ForegroundColor Green
 
 # Start Frontend in new window
-$frontendJob = Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$rootPath\ProjectAssignmentManager.UI'; ng serve --open" -PassThru
+Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$rootPath\ProjectAssignmentManager.UI'; ng serve --open"
+
+Write-Host "   Frontend starting at: http://localhost:4200/" -ForegroundColor Cyan
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
@@ -50,11 +51,13 @@ Write-Host ""
 Write-Host "Backend:  https://localhost:5001/" -ForegroundColor White
 Write-Host "Frontend: http://localhost:4200/" -ForegroundColor White
 Write-Host ""
-Write-Host "ℹ️  Estimated startup times:" -ForegroundColor Cyan
-Write-Host "   - Backend: 10-15 seconds" -ForegroundColor Gray
-Write-Host "   - Frontend: 30-40 seconds" -ForegroundColor Gray
+Write-Host "ℹ️  INFO:" -ForegroundColor Cyan
+Write-Host "   - Backend will be ready in ~10-15 seconds" -ForegroundColor Gray
+Write-Host "   - Frontend will be ready in ~30-40 seconds" -ForegroundColor Gray
+Write-Host "   - Browser will open automatically" -ForegroundColor Gray
 Write-Host ""
-Write-Host "⚠️  If you see ERR_CONNECTION_REFUSED on first load:" -ForegroundColor Yellow
+Write-Host "⚠️  IMPORTANT:" -ForegroundColor Yellow
+Write-Host "   If you see ERR_CONNECTION_REFUSED on first load:" -ForegroundColor Yellow
 Write-Host "   1. Wait for backend to fully start (check Backend window)" -ForegroundColor White
 Write-Host "   2. Refresh the page (F5)" -ForegroundColor White
 Write-Host ""
