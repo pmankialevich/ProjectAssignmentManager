@@ -67,6 +67,20 @@ if (app.Environment.IsDevelopment())
 // CORS must be before other middleware!
 app.UseCors("AllowAngularApp");
 
+// Log CORS requests for debugging
+app.Use(async (context, next) =>
+{
+    var origin = context.Request.Headers["Origin"].ToString();
+    var method = context.Request.Method;
+    var path = context.Request.Path;
+
+    Console.WriteLine($"?? {method} {path} from origin: {origin}");
+
+    await next();
+
+    Console.WriteLine($"   Response: {context.Response.StatusCode}");
+});
+
 // Global exception handling middleware
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
