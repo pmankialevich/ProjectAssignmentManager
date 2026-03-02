@@ -23,8 +23,7 @@ public class JsonRepository<T> : IRepository<T> where T : class
         await _semaphore.WaitAsync();
         try
         {
-            var json = await File.ReadAllTextAsync(_filePath);
-            return JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
+            return await ReadAllInternalAsync();
         }
         finally
         {
@@ -34,9 +33,17 @@ public class JsonRepository<T> : IRepository<T> where T : class
 
     public async Task<T?> GetByIdAsync(Guid id)
     {
-        var items = await GetAllAsync();
-        var idProperty = typeof(T).GetProperty("Id");
-        return items.FirstOrDefault(item => (Guid)idProperty!.GetValue(item)! == id);
+        await _semaphore.WaitAsync();
+        try
+        {
+            var items = await ReadAllInternalAsync();
+            var idProperty = typeof(T).GetProperty("Id");
+            return items.FirstOrDefault(item => (Guid)idProperty!.GetValue(item)! == id);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public async Task<T> AddAsync(T entity)
@@ -44,9 +51,9 @@ public class JsonRepository<T> : IRepository<T> where T : class
         await _semaphore.WaitAsync();
         try
         {
-            var items = await GetAllAsync();
+            var items = await ReadAllInternalAsync();
             items.Add(entity);
-            await SaveAllAsync(items);
+            await SaveAllInternalAsync(items);
             return entity;
         }
         finally
@@ -60,7 +67,7 @@ public class JsonRepository<T> : IRepository<T> where T : class
         await _semaphore.WaitAsync();
         try
         {
-            var items = await GetAllAsync();
+            var items = await ReadAllInternalAsync();
             var idProperty = typeof(T).GetProperty("Id");
             var entityId = (Guid)idProperty!.GetValue(entity)!;
             
@@ -68,7 +75,7 @@ public class JsonRepository<T> : IRepository<T> where T : class
             if (index >= 0)
             {
                 items[index] = entity;
-                await SaveAllAsync(items);
+                await SaveAllInternalAsync(items);
             }
             return entity;
         }
@@ -83,13 +90,13 @@ public class JsonRepository<T> : IRepository<T> where T : class
         await _semaphore.WaitAsync();
         try
         {
-            var items = await GetAllAsync();
+            var items = await ReadAllInternalAsync();
             var idProperty = typeof(T).GetProperty("Id");
             var removed = items.RemoveAll(item => (Guid)idProperty!.GetValue(item)! == id);
             
             if (removed > 0)
             {
-                await SaveAllAsync(items);
+                await SaveAllInternalAsync(items);
                 return true;
             }
             return false;
@@ -102,11 +109,26 @@ public class JsonRepository<T> : IRepository<T> where T : class
 
     public async Task<bool> ExistsAsync(Guid id)
     {
-        var item = await GetByIdAsync(id);
-        return item != null;
+        await _semaphore.WaitAsync();
+        try
+        {
+            var items = await ReadAllInternalAsync();
+            var idProperty = typeof(T).GetProperty("Id");
+            return items.Any(item => (Guid)idProperty!.GetValue(item)! == id);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
-    private async Task SaveAllAsync(List<T> items)
+    private async Task<List<T>> ReadAllInternalAsync()
+    {
+        var json = await File.ReadAllTextAsync(_filePath);
+        return JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
+    }
+
+    private async Task SaveAllInternalAsync(List<T> items)
     {
         var json = JsonSerializer.Serialize(items, new JsonSerializerOptions 
         { 
