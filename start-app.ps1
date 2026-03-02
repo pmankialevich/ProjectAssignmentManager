@@ -30,7 +30,8 @@ Write-Host ""
 # Start Backend in new window
 $backendJob = Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$rootPath\ProjectAssignmentManager.API'; dotnet run" -PassThru
 
-Start-Sleep -Seconds 3
+Write-Host "Waiting for backend to start (10 seconds)..." -ForegroundColor Yellow
+Start-Sleep -Seconds 10
 
 Write-Host "Starting Angular Frontend..." -ForegroundColor Green
 Write-Host "URL: http://localhost:4200/" -ForegroundColor Cyan
