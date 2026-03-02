@@ -47,12 +47,15 @@ Write-Host "================================================" -ForegroundColor C
 Write-Host "  Both Applications Starting in Parallel!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Backend:  https://localhost:5001/" -ForegroundColor White
-Write-Host "Frontend: http://localhost:4200/" -ForegroundColor White
+Write-Host "Backend HTTP:  http://localhost:5000/" -ForegroundColor White
+Write-Host "Backend HTTPS: https://localhost:5001/" -ForegroundColor Gray
+Write-Host "Frontend:      http://localhost:4200/" -ForegroundColor White
 Write-Host ""
 Write-Host "ℹ️  Estimated startup times:" -ForegroundColor Cyan
 Write-Host "   - Backend: 10-15 seconds" -ForegroundColor Gray
 Write-Host "   - Frontend: 30-40 seconds" -ForegroundColor Gray
+Write-Host ""
+Write-Host "ℹ️  Frontend uses HTTP (port 5000) - no certificate needed!" -ForegroundColor Green
 Write-Host ""
 Write-Host "⚠️  If you see ERR_CONNECTION_REFUSED on first load:" -ForegroundColor Yellow
 Write-Host "   1. Wait for backend to fully start (check Backend window)" -ForegroundColor White

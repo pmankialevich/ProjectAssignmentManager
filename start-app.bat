@@ -21,12 +21,15 @@ echo ================================================
 echo   Both Applications Starting in Parallel!
 echo ================================================
 echo.
-echo Backend:  https://localhost:5001/
-echo Frontend: http://localhost:4200/ (will open in ~30 sec)
+echo Backend HTTP:  http://localhost:5000/
+echo Backend HTTPS: https://localhost:5001/
+echo Frontend:      http://localhost:4200/ (will open in ~30 sec)
 echo.
 echo ℹ️  Estimated startup times:
 echo    - Backend: 10-15 seconds
 echo    - Frontend: 30-40 seconds
+echo.
+echo ℹ️  Frontend uses HTTP (port 5000) - no certificate needed!
 echo.
 echo ⚠️  If you see ERR_CONNECTION_REFUSED:
 echo    1. Wait for backend (check "Backend API" window)

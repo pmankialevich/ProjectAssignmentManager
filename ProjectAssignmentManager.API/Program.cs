@@ -58,10 +58,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
     Console.WriteLine("? Backend API ready!");
-    Console.WriteLine("? API URL: https://localhost:5001/");
+    Console.WriteLine("? API URLs:");
+    Console.WriteLine("   - HTTP:  http://localhost:5000/");
+    Console.WriteLine("   - HTTPS: https://localhost:5001/");
     Console.WriteLine("? OpenAPI: https://localhost:5001/openapi/v1.json");
     Console.WriteLine("");
-    Console.WriteLine("?? TIP: Use 'start-app.bat' or 'quick-start.bat' to launch both backend and frontend!");
+    Console.WriteLine("?? TIP: Frontend uses HTTP (port 5000) by default");
+    Console.WriteLine("?? Use 'start-app.bat' to launch both backend and frontend!");
 }
 
 // CORS must be before other middleware!
