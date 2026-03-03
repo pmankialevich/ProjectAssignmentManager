@@ -72,7 +72,7 @@ Provide relevant implementation only
 Briefly explain the reasoning
 Do not silently change decisions.
 Ask clarification questions before proceeding if needed.
-
+```
 
 ## Additional Adjustments After the Prompt
 Backend JSON camelCase: Added JsonNamingPolicy.CamelCase in Program.cs so that Angular receives success/data fields without manual mapping.
@@ -99,7 +99,7 @@ Project Structure Optimization: Simplified folder organization in both backend a
 start-app.bat — launches the backend (http://localhost:5000) and the Angular app (http://localhost:4200) in separate windows. Wait approximately 30–40 seconds until both services are fully ready, then open the frontend in your browser.
 
 ## Insights
-##Effective Prompting Strategies
+## Effective Prompting Strategies
 
 Clear symptom description: Precisely describing the issue (e.g., “Loading developers… remains indefinitely”) enabled fast identification of combined root causes (PascalCase JSON serialization + missing frontend error handling).
 
@@ -107,13 +107,13 @@ Well-defined, atomic requests: Explicit instructions such as “keep only start-
 
 Contextual references: Mentioning the exact layer (backend/Angular) or specific file significantly reduced clarification cycles and improved turnaround time.
 
-##Less Effective Prompting Approaches
+## Less Effective Prompting Approaches
 
 Overly broad requests: General prompts like “review the entire history” lacked actionable scope, requiring additional clarification to determine objectives and expected outcomes.
 
 Undefined success criteria: Requests without measurable or observable results made it harder to validate completeness or correctness.
 
-##High-Impact Prompting Patterns
+## High-Impact Prompting Patterns
 
 Problem → Context → Expected Result: Clearly stating the issue, the relevant technical scope (e.g., backend serialization, Angular component lifecycle), and the desired outcome consistently produced efficient and accurate solutions.
 
