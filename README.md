@@ -9,7 +9,6 @@ Frontend: Angular 17 standalone architecture, @angular/core signals with takeUnt
 Tooling: Node.js/npm 11+ for the Angular CLI, .NET SDK 8+ for the API, and start-app.bat for running both applications simultaneously.
 
 ## Initial Prompt (full text)
-```
 I want you to act as a senior .NET solution architect with extensive experience in building scalable web applications using ASP.NET Core and Angular.
 Your task is to guide me step by step through the design and implementation of a small full-stack application called Project Assignment Manager.
 Current State
@@ -72,7 +71,6 @@ Provide relevant implementation only
 Briefly explain the reasoning
 Do not silently change decisions.
 Ask clarification questions before proceeding if needed.
-```
 
 ## Additional Adjustments After the Prompt
 Backend JSON camelCase: Added JsonNamingPolicy.CamelCase in Program.cs so that Angular receives success/data fields without manual mapping.
