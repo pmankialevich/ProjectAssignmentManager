@@ -10,12 +10,69 @@
 Пользователь предоставил контекст и описал проблему целиком:
 
 ```
-# FILE CONTEXT
-```typescript ProjectAssignmentManager.UI\src\environments\environment.ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:5000/api'  // HTTP вместо HTTPS
-};
+I want you to act as a senior .NET solution architect with extensive experience in building scalable web applications using ASP.NET Core and Angular.
+Your task is to guide me step by step through the design and implementation of a small full-stack application called Project Assignment Manager.
+Current State
+Backend: An empty .NET 10 ASP.NET Core Web API project already exists.
+Frontend: A separate folder exists but no Angular application has been created yet.
+No database should be used — all data must be persisted in a JSON file.
+The solution should be clean, well-structured, and production-oriented (within reasonable scope).
+Functional Requirements Developer Management
+Create developer (Name, Email, SeniorityLevel)
+Update developer
+Delete developer
+Get all developers
+Get developer by ID (including assigned projects)
+Project Management
+Create project (Name, Description)
+Update project
+Delete project
+Get all projects
+Developer–Project Relationship (Many-to-Many)
+Assign developer to project
+Remove developer from project
+Search developers by project
+Search projects by developer
+Backend Requirements
+Use Controllers, Services, DTOs, Models
+Proper folder structure
+Clean separation of concerns
+Thread-safe JSON file persistence
+Proper validation (DataAnnotations or FluentValidation)
+Global exception handling
+Consistent API response patterns
+Proper modeling of many-to-many relationship
+Avoid overengineering but keep clean architecture principles
+JSON persistence must:
+Be abstracted behind a service/repository
+Handle concurrent file access safely
+Prevent file corruption
+Keep data consistent
+Frontend Requirements (Angular)
+Create Angular app using Angular CLI
+Implement routing
+At least 3 main pages:
+Developers List Page
+Developer Details Page
+Projects Management Page
+Use:
+Angular services for API communication
+Reactive Forms
+Basic form validation
+Clean component architecture
+Keep UI simple and clean (no heavy UI libraries required unless suggested)
+Proper state handling without overcomplication
+Implementation Rules
+Start with high-level architecture explanation.
+Define folder structure for backend and frontend.
+Implement step by step.
+For each step:
+Clearly specify which file to create or modify
+Provide relevant implementation only
+Briefly explain the reasoning
+Do not silently change decisions.
+Ask clarification questions before proceeding if needed.
+
 
 ```
 
