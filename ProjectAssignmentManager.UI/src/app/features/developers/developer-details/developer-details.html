@@ -1,18 +1,24 @@
 <div class="container">
-  <div *ngIf="loading" class="loading">Loading developer details...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
+  @if (loading()) {
+    <div class="loading">Loading developer details...</div>
+  }
 
-  <div *ngIf="developer && !loading" class="details-container">
+  @if (error(); as errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+  }
+
+  @if (!loading() && developer(); as developer) {
+    <div class="details-container">
     <div class="card">
       <div class="header">
         <h2>Developer Details</h2>
         <div class="actions">
-          <button class="btn btn-warning" [routerLink]="['/developers/edit', developer.id]">
-            Edit
-          </button>
-          <button class="btn btn-secondary" (click)="goBack()">
-            Back to List
-          </button>
+            <button class="btn btn-warning" [routerLink]="['/developers/edit', developer.id]">
+              Edit
+            </button>
+            <button class="btn btn-secondary" (click)="goBack()">
+              Back to List
+            </button>
         </div>
       </div>
 
@@ -27,9 +33,9 @@
         </div>
         <div class="detail-item">
           <label>Seniority Level:</label>
-          <span class="badge" [ngClass]="'badge-' + developer.seniorityLevel">
-            {{ getSeniorityText(developer.seniorityLevel) }}
-          </span>
+            <span [class]="'badge badge-' + developer.seniorityLevel">
+              {{ getSeniorityText(developer.seniorityLevel) }}
+            </span>
         </div>
         <div class="detail-item">
           <label>Created At:</label>
@@ -42,54 +48,67 @@
       </div>
     </div>
 
-    <div class="card">
-      <h3>Assigned Projects</h3>
-      
-      <div *ngIf="projects.length === 0" class="empty-state">
-        <p>This developer is not assigned to any projects yet.</p>
-      </div>
+      <div class="card">
+        <h3>Assigned Projects</h3>
+        
+        @if (!hasProjects()) {
+          <div class="empty-state">
+            <p>This developer is not assigned to any projects yet.</p>
+          </div>
+        }
 
-      <table *ngIf="projects.length > 0" class="table">
-        <thead>
-          <tr>
-            <th>Project Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let project of projects">
-            <td>{{ project.name }}</td>
-            <td>{{ project.description || 'No description' }}</td>
-            <td class="actions">
-              <button class="btn btn-sm btn-info" [routerLink]="['/projects', project.id]">
-                View
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="removeFromProject(project.id)">
-                Remove
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        @if (hasProjects()) {
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (project of projects(); track project.id) {
+                <tr>
+                  <td>{{ project.name }}</td>
+                  <td>{{ project.description || 'No description' }}</td>
+                  <td class="actions">
+                    <button class="btn btn-sm btn-info" [routerLink]="['/projects', project.id]">
+                      View
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="removeFromProject(project.id)">
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
 
-      <div class="assign-section">
-        <h4>Assign to Project</h4>
-        <div class="assign-form">
-          <select [(ngModel)]="selectedProjectId" class="form-control">
-            <option value="">Select a project...</option>
-            <option *ngFor="let project of availableProjects" [value]="project.id">
-              {{ project.name }}
-            </option>
-          </select>
-          <button 
-            class="btn btn-primary" 
-            (click)="assignToProject()" 
-            [disabled]="!selectedProjectId">
-            Assign
-          </button>
+        <div class="assign-section">
+          <h4>Assign to Project</h4>
+          <div class="assign-form">
+            <select
+              class="form-control"
+              [ngModel]="selectedProjectId()"
+              (ngModelChange)="selectedProjectId.set($event)"
+            >
+              <option value="">Select a project...</option>
+              @for (project of availableProjects(); track project.id) {
+                <option [value]="project.id">
+                  {{ project.name }}
+                </option>
+              }
+            </select>
+            <button 
+              class="btn btn-primary" 
+              (click)="assignToProject()" 
+              [disabled]="!selectedProjectId()">
+              Assign
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>

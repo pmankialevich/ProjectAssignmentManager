@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DeveloperService } from '../../../core/services/developer';
 import { SeniorityLevel } from '../../../core/models/models';
 
@@ -10,95 +11,105 @@ import { SeniorityLevel } from '../../../core/models/models';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './developer-form.html',
   styleUrl: './developer-form.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DeveloperFormComponent implements OnInit {
-  developerForm: FormGroup;
-  isEditMode = false;
-  developerId: string | null = null;
-  loading = false;
-  error: string | null = null;
-  seniorityLevels = [
+export class DeveloperFormComponent {
+  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly developerService = inject(DeveloperService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly developerForm = this.fb.group({
+    name: this.fb.control('', { validators: [Validators.required, Validators.minLength(2)] }),
+    email: this.fb.control('', { validators: [Validators.required, Validators.email] }),
+    seniorityLevel: this.fb.control<SeniorityLevel>(SeniorityLevel.Junior, {
+      validators: [Validators.required]
+    })
+  });
+
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  private readonly developerId = signal<string | null>(null);
+  readonly isEditMode = computed(() => this.developerId() !== null);
+  readonly formTitle = computed(() => (this.isEditMode() ? 'Edit Developer' : 'Create Developer'));
+  readonly actionLabel = computed(() => (this.isEditMode() ? 'Update' : 'Create'));
+  readonly seniorityLevels = [
     { value: SeniorityLevel.Junior, label: 'Junior' },
     { value: SeniorityLevel.Middle, label: 'Middle' },
     { value: SeniorityLevel.Senior, label: 'Senior' },
     { value: SeniorityLevel.Lead, label: 'Lead' }
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private developerService: DeveloperService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
-    this.developerForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      seniorityLevel: [SeniorityLevel.Junior, Validators.required]
-    });
+  constructor() {
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const id = params.get('id');
+        this.developerId.set(id);
+        if (id) {
+          this.loadDeveloper(id);
+        } else {
+          this.loading.set(false);
+        }
+      });
   }
 
-  ngOnInit(): void {
-    this.developerId = this.route.snapshot.paramMap.get('id');
-    if (this.developerId) {
-      this.isEditMode = true;
-      this.loadDeveloper();
-    }
-  }
+  private loadDeveloper(id: string): void {
+    this.loading.set(true);
+    this.error.set(null);
 
-  loadDeveloper(): void {
-    if (!this.developerId) return;
-
-    this.loading = true;
-    this.developerService.getDeveloperById(this.developerId).subscribe({
-      next: (response) => {
-        this.developerForm.patchValue({
-          name: response.data.name,
-          email: response.data.email,
-          seniorityLevel: response.data.seniorityLevel
-        });
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load developer';
-        this.loading = false;
-        console.error(err);
-      }
-    });
+    this.developerService
+      .getDeveloperById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          if (!response?.success || !response.data) {
+            this.error.set(response?.message ?? 'Failed to load developer');
+          } else {
+            this.developerForm.patchValue({
+              name: response.data.name,
+              email: response.data.email,
+              seniorityLevel: response.data.seniorityLevel
+            });
+          }
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set('Failed to load developer');
+          this.loading.set(false);
+          console.error(err);
+        }
+      });
   }
 
   onSubmit(): void {
     if (this.developerForm.invalid) {
+      this.developerForm.markAllAsTouched();
       return;
     }
 
-    this.loading = true;
-    this.error = null;
+    this.loading.set(true);
+    this.error.set(null);
 
-    const formValue = this.developerForm.value;
+    const formValue = this.developerForm.getRawValue();
+    const id = this.developerId();
+    const request$ = id
+      ? this.developerService.updateDeveloper(id, formValue)
+      : this.developerService.createDeveloper(formValue);
 
-    if (this.isEditMode && this.developerId) {
-      this.developerService.updateDeveloper(this.developerId, formValue).subscribe({
+    request$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.router.navigate(['/developers']);
         },
         error: (err) => {
-          this.error = 'Failed to update developer';
-          this.loading = false;
+          this.error.set(id ? 'Failed to update developer' : 'Failed to create developer');
+          this.loading.set(false);
           console.error(err);
         }
       });
-    } else {
-      this.developerService.createDeveloper(formValue).subscribe({
-        next: () => {
-          this.router.navigate(['/developers']);
-        },
-        error: (err) => {
-          this.error = 'Failed to create developer';
-          this.loading = false;
-          console.error(err);
-        }
-      });
-    }
   }
 
   cancel(): void {

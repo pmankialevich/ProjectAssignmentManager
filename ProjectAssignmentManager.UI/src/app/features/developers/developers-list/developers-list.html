@@ -6,11 +6,16 @@
     </button>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading developers...</div>
-  
-  <div *ngIf="error" class="error">{{ error }}</div>
+  @if (loading()) {
+    <div class="loading">Loading developers...</div>
+  }
 
-  <table *ngIf="!loading && developers.length > 0" class="table">
+  @if (error(); as errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+  }
+
+  @if (!loading() && hasDevelopers()) {
+    <table class="table">
     <thead>
       <tr>
         <th>Name</th>
@@ -19,32 +24,37 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <tr *ngFor="let developer of developers">
-        <td>{{ developer.name }}</td>
-        <td>{{ developer.email }}</td>
-        <td>
-          <span class="badge" [ngClass]="'badge-' + developer.seniorityLevel">
-            {{ getSeniorityText(developer.seniorityLevel) }}
-          </span>
-        </td>
-        <td class="actions">
-          <button class="btn btn-sm btn-info" [routerLink]="['/developers', developer.id]">
-            View
-          </button>
-          <button class="btn btn-sm btn-warning" [routerLink]="['/developers/edit', developer.id]">
-            Edit
-          </button>
-          <button class="btn btn-sm btn-danger" (click)="deleteDeveloper(developer.id)">
-            Delete
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      <tbody>
+        @for (developer of developers(); track developer.id) {
+          <tr>
+            <td>{{ developer.name }}</td>
+            <td>{{ developer.email }}</td>
+            <td>
+              <span [class]="'badge badge-' + developer.seniorityLevel">
+                {{ getSeniorityText(developer.seniorityLevel) }}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn btn-sm btn-info" [routerLink]="['/developers', developer.id]">
+                View
+              </button>
+              <button class="btn btn-sm btn-warning" [routerLink]="['/developers/edit', developer.id]">
+                Edit
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteDeveloper(developer.id)">
+                Delete
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 
-  <div *ngIf="!loading && developers.length === 0" class="empty-state">
-    <p>No developers found. Create one to get started!</p>
-    <button class="btn btn-primary" routerLink="/developers/new">Add First Developer</button>
-  </div>
+  @if (!loading() && !hasDevelopers()) {
+    <div class="empty-state">
+      <p>No developers found. Create one to get started!</p>
+      <button class="btn btn-primary" routerLink="/developers/new">Add First Developer</button>
+    </div>
+  }
 </div>

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProjectService } from '../../../core/services/project';
 
 @Component({
@@ -9,87 +10,95 @@ import { ProjectService } from '../../../core/services/project';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './project-form.html',
   styleUrl: './project-form.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectFormComponent implements OnInit {
-  projectForm: FormGroup;
-  isEditMode = false;
-  projectId: string | null = null;
-  loading = false;
-  error: string | null = null;
+export class ProjectFormComponent {
+  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly projectService = inject(ProjectService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(
-    private fb: FormBuilder,
-    private projectService: ProjectService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
-    this.projectForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['']
-    });
+  readonly projectForm = this.fb.group({
+    name: this.fb.control('', { validators: [Validators.required, Validators.minLength(3)] }),
+    description: this.fb.control('')
+  });
+
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  private readonly projectId = signal<string | null>(null);
+  readonly isEditMode = computed(() => this.projectId() !== null);
+  readonly formTitle = computed(() => (this.isEditMode() ? 'Edit Project' : 'Create Project'));
+  readonly actionLabel = computed(() => (this.isEditMode() ? 'Update' : 'Create'));
+
+  constructor() {
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const id = params.get('id');
+        this.projectId.set(id);
+        if (id) {
+          this.loadProject(id);
+        } else {
+          this.loading.set(false);
+        }
+      });
   }
 
-  ngOnInit(): void {
-    this.projectId = this.route.snapshot.paramMap.get('id');
-    if (this.projectId) {
-      this.isEditMode = true;
-      this.loadProject();
-    }
-  }
+  private loadProject(id: string): void {
+    this.loading.set(true);
+    this.error.set(null);
 
-  loadProject(): void {
-    if (!this.projectId) return;
-
-    this.loading = true;
-    this.projectService.getProjectById(this.projectId).subscribe({
-      next: (response) => {
-        this.projectForm.patchValue({
-          name: response.data.name,
-          description: response.data.description
-        });
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load project';
-        this.loading = false;
-        console.error(err);
-      }
-    });
+    this.projectService
+      .getProjectById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          if (!response?.success || !response.data) {
+            this.error.set(response?.message ?? 'Failed to load project');
+          } else {
+            this.projectForm.patchValue({
+              name: response.data.name,
+              description: response.data.description ?? ''
+            });
+          }
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set('Failed to load project');
+          this.loading.set(false);
+          console.error(err);
+        }
+      });
   }
 
   onSubmit(): void {
     if (this.projectForm.invalid) {
+      this.projectForm.markAllAsTouched();
       return;
     }
 
-    this.loading = true;
-    this.error = null;
+    this.loading.set(true);
+    this.error.set(null);
 
-    const formValue = this.projectForm.value;
+    const formValue = this.projectForm.getRawValue();
+    const id = this.projectId();
+    const request$ = id
+      ? this.projectService.updateProject(id, formValue)
+      : this.projectService.createProject(formValue);
 
-    if (this.isEditMode && this.projectId) {
-      this.projectService.updateProject(this.projectId, formValue).subscribe({
+    request$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.router.navigate(['/projects']);
         },
         error: (err) => {
-          this.error = 'Failed to update project';
-          this.loading = false;
+          this.error.set(id ? 'Failed to update project' : 'Failed to create project');
+          this.loading.set(false);
           console.error(err);
         }
       });
-    } else {
-      this.projectService.createProject(formValue).subscribe({
-        next: () => {
-          this.router.navigate(['/projects']);
-        },
-        error: (err) => {
-          this.error = 'Failed to create project';
-          this.loading = false;
-          console.error(err);
-        }
-      });
-    }
   }
 
   cancel(): void {

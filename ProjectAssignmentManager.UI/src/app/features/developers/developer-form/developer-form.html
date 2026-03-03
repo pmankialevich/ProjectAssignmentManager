@@ -1,11 +1,17 @@
 <div class="container">
   <div class="card">
-    <h2>{{ isEditMode ? 'Edit Developer' : 'Create Developer' }}</h2>
+    <h2>{{ formTitle() }}</h2>
     
-    <div *ngIf="loading" class="loading">Loading...</div>
-    <div *ngIf="error" class="error">{{ error }}</div>
+    @if (loading()) {
+      <div class="loading">Loading...</div>
+    }
 
-    <form [formGroup]="developerForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+    @if (error(); as errorMessage) {
+      <div class="error">{{ errorMessage }}</div>
+    }
+
+    @if (!loading()) {
+      <form [formGroup]="developerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="name">Name *</label>
         <input
@@ -15,10 +21,16 @@
           formControlName="name"
           placeholder="Enter developer name"
         />
-        <div *ngIf="developerForm.get('name')?.invalid && developerForm.get('name')?.touched" class="error-message">
-          <small *ngIf="developerForm.get('name')?.errors?.['required']">Name is required</small>
-          <small *ngIf="developerForm.get('name')?.errors?.['minlength']">Name must be at least 2 characters</small>
-        </div>
+        @if (developerForm.controls.name.invalid && developerForm.controls.name.touched) {
+          <div class="error-message">
+            @if (developerForm.controls.name.errors?.['required']) {
+              <small>Name is required</small>
+            }
+            @if (developerForm.controls.name.errors?.['minlength']) {
+              <small>Name must be at least 2 characters</small>
+            }
+          </div>
+        }
       </div>
 
       <div class="form-group">
@@ -30,29 +42,38 @@
           formControlName="email"
           placeholder="Enter email address"
         />
-        <div *ngIf="developerForm.get('email')?.invalid && developerForm.get('email')?.touched" class="error-message">
-          <small *ngIf="developerForm.get('email')?.errors?.['required']">Email is required</small>
-          <small *ngIf="developerForm.get('email')?.errors?.['email']">Invalid email format</small>
-        </div>
+        @if (developerForm.controls.email.invalid && developerForm.controls.email.touched) {
+          <div class="error-message">
+            @if (developerForm.controls.email.errors?.['required']) {
+              <small>Email is required</small>
+            }
+            @if (developerForm.controls.email.errors?.['email']) {
+              <small>Invalid email format</small>
+            }
+          </div>
+        }
       </div>
 
       <div class="form-group">
         <label for="seniorityLevel">Seniority Level *</label>
         <select id="seniorityLevel" class="form-control" formControlName="seniorityLevel">
-          <option *ngFor="let level of seniorityLevels" [value]="level.value">
+          @for (level of seniorityLevels; track level.value) {
+            <option [value]="level.value">
             {{ level.label }}
-          </option>
+            </option>
+          }
         </select>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary" [disabled]="developerForm.invalid || loading">
-          {{ isEditMode ? 'Update' : 'Create' }}
+        <button type="submit" class="btn btn-primary" [disabled]="developerForm.invalid || loading()">
+          {{ actionLabel() }}
         </button>
         <button type="button" class="btn btn-secondary" (click)="cancel()">
           Cancel
         </button>
       </div>
-    </form>
+      </form>
+    }
   </div>
 </div>

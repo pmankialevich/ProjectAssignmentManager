@@ -6,41 +6,51 @@
     </button>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading projects...</div>
+  @if (loading()) {
+    <div class="loading">Loading projects...</div>
+  }
   
-  <div *ngIf="error" class="error">{{ error }}</div>
+  @if (error(); as errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+  }
 
-  <table *ngIf="!loading && projects.length > 0" class="table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Created At</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let project of projects">
-        <td>{{ project.name }}</td>
-        <td>{{ project.description || 'No description' }}</td>
-        <td>{{ project.createdAt | date:'short' }}</td>
-        <td class="actions">
-          <button class="btn btn-sm btn-info" [routerLink]="['/projects', project.id]">
-            View
-          </button>
-          <button class="btn btn-sm btn-warning" [routerLink]="['/projects/edit', project.id]">
-            Edit
-          </button>
-          <button class="btn btn-sm btn-danger" (click)="deleteProject(project.id)">
-            Delete
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  @if (!loading() && hasProjects()) {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (project of projects(); track project.id) {
+          <tr>
+            <td>{{ project.name }}</td>
+            <td>{{ project.description || 'No description' }}</td>
+            <td>{{ project.createdAt | date:'short' }}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-info" [routerLink]="['/projects', project.id]">
+                View
+              </button>
+              <button class="btn btn-sm btn-warning" [routerLink]="['/projects/edit', project.id]">
+                Edit
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteProject(project.id)">
+                Delete
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 
-  <div *ngIf="!loading && projects.length === 0" class="empty-state">
-    <p>No projects found. Create one to get started!</p>
-    <button class="btn btn-primary" routerLink="/projects/new">Add First Project</button>
-  </div>
+  @if (!loading() && !hasProjects()) {
+    <div class="empty-state">
+      <p>No projects found. Create one to get started!</p>
+      <button class="btn btn-primary" routerLink="/projects/new">Add First Project</button>
+    </div>
+  }
 </div>

@@ -3,11 +3,17 @@ using ProjectAssignmentManager.API.Repositories;
 using ProjectAssignmentManager.API.Services;
 using ProjectAssignmentManager.API.Middleware;
 using System.Diagnostics;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 // Configure OpenAPI
 builder.Services.AddOpenApi();
@@ -79,9 +85,26 @@ app.Use(async (context, next) =>
 
     Console.WriteLine($"?? {method} {path} from origin: {origin}");
 
-    await next();
+    // Read request body for POST/PUT
+    if (method == "POST" || method == "PUT")
+    {
+        context.Request.EnableBuffering();
+        var body = await new StreamReader(context.Request.Body).ReadToEndAsync();
+        context.Request.Body.Position = 0;
+        Console.WriteLine($"   Request Body: {body}");
+    }
 
-    Console.WriteLine($"   Response: {context.Response.StatusCode}");
+    try
+    {
+        await next();
+        Console.WriteLine($"   ? Response: {context.Response.StatusCode}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"   ? Exception: {ex.Message}");
+        Console.WriteLine($"   Stack: {ex.StackTrace}");
+        throw;
+    }
 });
 
 // Global exception handling middleware
