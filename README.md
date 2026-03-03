@@ -1,14 +1,14 @@
 ﻿# Project Assignment Manager
-Локальная платформа для управления разработчиками, проектами и назначениями: ASP.NET Core API с файловым JSON‑хранилищем (через `JsonRepository`) и Angular-frontend со standalone-компонентами, сигналами и минималистичным UI.
+A local platform for managing developers, projects, and assignments: an ASP.NET Core API with file-based JSON storage (via JsonRepository) and an Angular frontend using standalone components, signals, and a minimalist UI.
 
 ## Used Technologies
-- **Backend:** ASP.NET Core 8, controllers, scoped сервисы, кастомный middleware `GlobalExceptionHandlerMiddleware`, OpenAPI, CORS-политики, JSON-хранилище на основе `SemaphoreSlim`.
-- **Frontend:** Angular 17 standalone, `@angular/core` signals + `takeUntilDestroyed`, HttpClient, router, общие стили.
-- **Tooling:** Node.js/npm 11+ для Angular CLI, .NET SDK 8+ для API, `start-app.bat` для одновременного запуска.
+Backend: ASP.NET Core 8, controllers, scoped services, custom GlobalExceptionHandlerMiddleware, OpenAPI, CORS policies, and file-based JSON storage using SemaphoreSlim for synchronization.
+
+Frontend: Angular 17 standalone architecture, @angular/core signals with takeUntilDestroyed, HttpClient, router, and shared styles.
+
+Tooling: Node.js/npm 11+ for the Angular CLI, .NET SDK 8+ for the API, and start-app.bat for running both applications simultaneously.
 
 ## Initial Prompt (full text)
-Пользователь предоставил контекст и описал проблему целиком:
-
 ```
 I want you to act as a senior .NET solution architect with extensive experience in building scalable web applications using ASP.NET Core and Angular.
 Your task is to guide me step by step through the design and implementation of a small full-stack application called Project Assignment Manager.
@@ -74,30 +74,49 @@ Do not silently change decisions.
 Ask clarification questions before proceeding if needed.
 
 
-```
-
-Loading developers... висит и не отображается грид со значениями
-```
-
-Этот промт подсветил переключение frontend на HTTP и зависающий список разработчиков.
-
 ## Additional Adjustments After the Prompt
-1. **Backend JSON camelCase:** добавили `JsonNamingPolicy.CamelCase` в `Program.cs`, чтобы Angular получал поля `success`/`data` без ручного преобразования.
-2. **Устойчивый DevelopersListComponent:** переписали компонент на сигналы и `takeUntilDestroyed`, добавили проверку `response.success`, сброс состояния при пустых ответах и логирование ошибок.
-3. **Чистка артефактов:** удалили все вспомогательные `.md` и `.bat/.ps1` файлы, оставив только `start-app.bat` как единый сценарий запуска.
-4. **Документация:** описали весь процесс, промты и выводы в README, чтобы новым участникам было понятно, что уже сделано.
+Backend JSON camelCase: Added JsonNamingPolicy.CamelCase in Program.cs so that Angular receives success/data fields without manual mapping.
+
+Resilient DevelopersListComponent: Refactored the component to use signals and takeUntilDestroyed, added response.success validation, state reset for empty responses, and proper error logging.
+
+Artifact Cleanup: Removed all auxiliary .md and .bat/.ps1 files, keeping only start-app.bat as the single unified startup script.
+
+Documentation: Documented the entire workflow, prompts, and conclusions in the README to make onboarding easier for new contributors.
+
+Global Error Handling: Centralized exception processing via custom middleware to ensure consistent API error responses and cleaner controller logic.
+
+Thread-Safe JSON Repository: Implemented synchronization with SemaphoreSlim to prevent race conditions during concurrent file access.
+
+Improved CORS Configuration: Configured explicit CORS policies to support secure local frontend–backend interaction.
+
+OpenAPI Integration: Enabled OpenAPI/Swagger for easier API testing and faster development feedback loops.
+
+Minimalist UI Refinement: Standardized layout and shared styles for a cleaner and more maintainable frontend structure.
+
+Project Structure Optimization: Simplified folder organization in both backend and frontend for better scalability and readability.
 
 ## Quick Start
-`start-app.bat` — запускает backend (`http://localhost:5000`) и Angular (`http://localhost:4200`) в отдельных окнах. Подождите ~30–40 секунд до полной готовности, затем откройте фронтенд.
+start-app.bat — launches the backend (http://localhost:5000) and the Angular app (http://localhost:4200) in separate windows. Wait approximately 30–40 seconds until both services are fully ready, then open the frontend in your browser.
 
 ## Insights
-**Which prompts worked well?**
-- Конкретное описание симптома (“Loading developers… висит…”) позволило быстро локализовать сочетание проблем (PascalCase JSON + отсутствие error handling).
-- Чёткая операция “оставить только start-app.bat” дала однозначный список файлов к удалению без лишних вопросов.
+Effective Prompting Strategies
 
-**Which prompts did not work (or worked poorly), and why?**
-- Общие просьбы вроде “посмотри всю историю” требовали дополнительных уточнений, так как не было понятно, что именно нужно просмотреть или изменить.
+Clear symptom description: Precisely describing the issue (e.g., “Loading developers… remains indefinitely”) enabled fast identification of combined root causes (PascalCase JSON serialization + missing frontend error handling).
 
-**Prompting patterns that gave the best results**
-- Фокус на результате/симптоме + ссылка на конкретный файл или стек (backend/Angular) ускоряли разработку.
-- Последовательные небольшие задачи (исправить поведение → почистить файлы → обновить документацию) помогали держать контекст и избегать откатов.
+Well-defined, atomic requests: Explicit instructions such as “keep only start-app.bat” resulted in deterministic outcomes and eliminated ambiguity in file management tasks.
+
+Contextual references: Mentioning the exact layer (backend/Angular) or specific file significantly reduced clarification cycles and improved turnaround time.
+
+Less Effective Prompting Approaches
+
+Overly broad requests: General prompts like “review the entire history” lacked actionable scope, requiring additional clarification to determine objectives and expected outcomes.
+
+Undefined success criteria: Requests without measurable or observable results made it harder to validate completeness or correctness.
+
+High-Impact Prompting Patterns
+
+Problem → Context → Expected Result: Clearly stating the issue, the relevant technical scope (e.g., backend serialization, Angular component lifecycle), and the desired outcome consistently produced efficient and accurate solutions.
+
+Iterative refinement: Breaking work into sequential, focused steps (fix behavior → clean artifacts → update documentation) preserved context, minimized regressions, and improved overall quality.
+
+Outcome-oriented phrasing: Framing prompts around the desired system behavior rather than implementation details encouraged more robust architectural decisions.
